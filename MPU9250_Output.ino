@@ -1,5 +1,6 @@
 
 #include "SimpleSPI.h"
+#include "utils/twi.h"
 
 
 float data;

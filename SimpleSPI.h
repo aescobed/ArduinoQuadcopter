@@ -129,11 +129,16 @@ private:
     static uint8_t txBufferIndex;
     static uint8_t txBufferLength;
 
+    static uint8_t rxBuffer[];
+    static uint8_t rxBufferIndex;
+    static uint8_t rxBufferLength;
+
 
     const uint8_t AK8963_I2C_ADDR = 0x0C;
 
 
     int writeByte(uint8_t address, uint8_t data);
+    int readByte(uint8_t address);
 
 };
 

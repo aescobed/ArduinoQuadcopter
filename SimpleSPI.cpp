@@ -389,11 +389,12 @@ int SimpleI2CClass::writeByte(uint8_t address, uint8_t data) {
 	// put byte in tx buffer
 	txBuffer[txBufferIndex] = data;
 	++txBufferIndex;
+
 	// update amount in buffer   
 	txBufferLength = txBufferIndex;
 
 	// transmit buffer (blocking)
-	uint8_t ret = twi_writeTo(txAddress, txBuffer, txBufferLength, 1, true);
+	uint8_t ret = twi_writeTo(txAddress, txBuffer, txBufferLength, true);
 	// reset tx buffer iterator vars
 	txBufferIndex = 0;
 	txBufferLength = 0;
@@ -401,6 +402,68 @@ int SimpleI2CClass::writeByte(uint8_t address, uint8_t data) {
 	return ret;
 
 }
+
+int SimpleI2CClass::readByte(uint8_t address) {
+
+	uint8_t data = 0;
+
+	txAddress = AK8963_I2C_ADDR;
+
+	// reset tx buffer iterator vars
+	txBufferIndex = 0;
+	txBufferLength = 0;
+
+	// in master transmitter mode
+// don't bother if buffer is full
+	if (txBufferLength >= BUFFER_LENGTH) {
+		return 0;
+	}
+	// put byte in tx buffer
+	txBuffer[txBufferIndex] = address;
+	++txBufferIndex;
+	// update amount in buffer   
+	txBufferLength = txBufferIndex;
+
+	// send tx buffer
+	int8_t ret = twi_writeTo(txAddress, txBuffer, txBufferLength, false);
+	txBufferIndex = 0;
+	txBufferLength = 0;
+
+	// request from the MPU9250
+	size_t size = 1;
+
+	if (1 > BUFFER_LENGTH)
+	{
+		size = BUFFER_LENGTH;
+	}
+
+	size_t read = (twi_readFrom(AK8963_I2C_ADDR, rxBuffer, size) == 0) ? size : 0;
+	rxBufferIndex = 0;
+	rxBufferLength = read;
+
+	int value = -1;
+	if (rxBufferIndex < rxBufferLength)
+	{
+		value = rxBuffer[rxBufferIndex];
+		++rxBufferIndex;
+	}
+	data = value;
+
+	return data;
+
+	/*  
+	uint8_t data = 0;                        // `data` will store the register data   
+  Wire.beginTransmission(address);         // Initialize the Tx buffer
+  Wire.write(subAddress);                  // Put slave register address in Tx buffer
+  Wire.endTransmission(false);             // Send the Tx buffer, but send a restart to keep connection alive
+  Wire.requestFrom(address, 1);            // Read two bytes from slave register address on MPU9250 
+  data = Wire.read();                      // Fill Rx buffer with result
+  return data;                             // Return data read from slave register
+  */
+
+}
+
+
 
 
 /* writes a register to the AK8963 given a register address and data */
