@@ -96,6 +96,12 @@ int SimpleSPIClass::begin()
 		return -2;
 	}
 
+
+
+
+
+
+
 	/*
 
 	// set AK8963 to Power Down
@@ -315,6 +321,31 @@ int SimpleSPIClass::whoAmIAK8963() {
 }
 
 
+void SimpleI2CClass::begin() {
+	// Begin I2C communication
+	twi_init();
+	twi_attachSlaveTxEvent(onRequestService); // default callback must exist
+	twi_attachSlaveRxEvent(onReceiveService); // default callback must exist
+}
+
+
+
+
+uint8_t SimpleI2CClass::getAK8963CID()
+{
+	//  uint8_t c = readByte(AK8963_ADDRESS, WHO_AM_I_AK8963);  // Read WHO_AM_I register for MPU-9250
+	writeByte(MPU9250_ADDRESS, USER_CTRL, 0x20);    // Enable I2C Master mode  
+	writeByte(MPU9250_ADDRESS, I2C_MST_CTRL, 0x0D); // I2C configuration multi-master I2C 400KHz
+
+	writeByte(MPU9250_ADDRESS, I2C_SLV0_ADDR, AK8963_I2C_ADDR | 0x80);    // Set the I2C slave address of AK8963 and set for read.
+	writeByte(MPU9250_ADDRESS, I2C_SLV0_REG, WHO_AM_I_AK8963);           // I2C slave 0 register address from where to begin data transfer
+	writeByte(MPU9250_ADDRESS, I2C_SLV0_CTRL, 0x81);                     // Enable I2C and transfer 1 byte
+	delay(10);
+
+	// WRONG PLACE
+	uint8_t c = readByte(MPU9250_ADDRESS, EXT_SENS_DATA_00);             // Read the WHO_AM_I byte
+	return c;
+}
 
 
 // Write to register using SPI
@@ -362,10 +393,10 @@ int SimpleSPIClass::readRegisters(uint8_t subAddress, uint8_t count, uint8_t* de
 }
 
 
-int SimpleI2CClass::writeByte(uint8_t address, uint8_t data) {
+int SimpleI2CClass::writeByte(uint8_t address, uint8_t subAddress, uint8_t data) {
 
 
-	txAddress = AK8963_I2C_ADDR;
+	txAddress = address;
 
 	// reset tx buffer iterator vars
 	txBufferIndex = 0;
@@ -377,7 +408,7 @@ int SimpleI2CClass::writeByte(uint8_t address, uint8_t data) {
 		return 0;
 	}
 	// put byte in tx buffer
-	txBuffer[txBufferIndex] = address;
+	txBuffer[txBufferIndex] = subAddress;
 	++txBufferIndex;
 	// update amount in buffer   
 	txBufferLength = txBufferIndex;
@@ -403,7 +434,7 @@ int SimpleI2CClass::writeByte(uint8_t address, uint8_t data) {
 
 }
 
-int SimpleI2CClass::readByte(uint8_t address) {
+int SimpleI2CClass::readByte(uint8_t address, uint8_t subAddress) {
 
 	uint8_t data = 0;
 
@@ -419,7 +450,7 @@ int SimpleI2CClass::readByte(uint8_t address) {
 		return 0;
 	}
 	// put byte in tx buffer
-	txBuffer[txBufferIndex] = address;
+	txBuffer[txBufferIndex] = subAddress;
 	++txBufferIndex;
 	// update amount in buffer   
 	txBufferLength = txBufferIndex;
@@ -441,6 +472,7 @@ int SimpleI2CClass::readByte(uint8_t address) {
 	rxBufferIndex = 0;
 	rxBufferLength = read;
 
+	// read the value
 	int value = -1;
 	if (rxBufferIndex < rxBufferLength)
 	{
@@ -514,4 +546,60 @@ int SimpleSPIClass::readAK8963Registers(uint8_t subAddress, uint8_t count, uint8
   // read the bytes off the MPU9250 EXT_SENS_DATA registers
 	int _status = readRegisters(EXT_SENS_DATA_00, count, dest);
 	return _status;
+}
+
+
+// behind the scenes function that is called when data is requested
+void SimpleI2CClass::onRequestService(void)
+{
+	// don't bother if user hasn't registered a callback
+	if (!user_onRequest) {
+		return;
+	}
+	// reset tx buffer iterator vars
+	// !!! this will kill any pending pre-master sendTo() activity
+	txBufferIndex = 0;
+	txBufferLength = 0;
+	// alert user program
+	user_onRequest();
+}
+
+
+
+
+// behind the scenes function that is called when data is received
+void SimpleI2CClass::onReceiveService(uint8_t* inBytes, int numBytes)
+{
+	// don't bother if user hasn't registered a callback
+	if (!user_onReceive) {
+		return;
+	}
+	// don't bother if rx buffer is in use by a master requestFrom() op
+	// i know this drops data, but it allows for slight stupidity
+	// meaning, they may not have read all the master requestFrom() data yet
+	if (rxBufferIndex < rxBufferLength) {
+		return;
+	}
+	// copy twi rx buffer into local read buffer
+	// this enables new reads to happen in parallel
+	for (uint8_t i = 0; i < numBytes; ++i) {
+		rxBuffer[i] = inBytes[i];
+	}
+	// set rx iterator vars
+	rxBufferIndex = 0;
+	rxBufferLength = numBytes;
+	// alert user program
+	user_onReceive(numBytes);
+}
+
+// sets function called on slave write
+void SimpleI2CClass::onReceive(void (*function)(int))
+{
+	user_onReceive = function;
+}
+
+// sets function called on slave read
+void SimpleI2CClass::onRequest(void (*function)(void))
+{
+	user_onRequest = function;
 }
