@@ -123,6 +123,9 @@ class SimpleI2CClass {
 
 public:
     void begin();
+    uint8_t getAK8963CID();
+    int writeByte(uint8_t address, uint8_t subAddress, uint8_t data);
+    int readByte(uint8_t address, uint8_t subAddress);
 
 private:
 
@@ -147,9 +150,6 @@ private:
     const uint8_t EXT_SENS_DATA_00 = 0x49;
 
     
-    int writeByte(uint8_t address, uint8_t subAddress, uint8_t data);
-    int readByte(uint8_t address, uint8_t subAddress);
-    uint8_t getAK8963CID();
     static void onRequestService(void);
     static void onReceiveService(uint8_t*, int);
     void onReceive(void (*)(int));

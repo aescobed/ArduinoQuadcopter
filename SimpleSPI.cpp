@@ -97,10 +97,11 @@ int SimpleSPIClass::begin()
 	}
 
 
+	// Begin I2C - Can set the frequency in the twi.h file (TWI_FREQ)
+	begin();
 
-
-
-
+	uint8_t res = getAK8963CID();
+	
 
 	/*
 
