@@ -1,11 +1,17 @@
 #include "Quad.h"
 
-int Quad::setup()
+Quad quad;
+
+int Quad::Initialize()
 {
 
 	SimpleSPIClass spi;
 	
-	spi.begin();
+	if (!spi.start())
+		return 0;
 
-	return 0;
+	
+
+
+	return 1;
 }

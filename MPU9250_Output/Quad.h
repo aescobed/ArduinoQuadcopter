@@ -6,6 +6,8 @@ class Quad {
 
 public:
 
-	int setup();
+	int Initialize();
 
 };
+
+extern Quad quad;

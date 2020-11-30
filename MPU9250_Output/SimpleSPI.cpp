@@ -69,8 +69,9 @@ int SimpleSPIClass::initialize()
 
 
 
-int SimpleSPIClass::begin()
+int SimpleSPIClass::start()
 {
+
 
 	uint8_t sreg = SREG;
 	noInterrupts();
@@ -95,11 +96,6 @@ int SimpleSPIClass::begin()
 	if (writeRegister(INT_ENABLE, INT_RAW_RDY_EN) < 0) { // set to data ready
 		return -2;
 	}
-
-
-	// Begin I2C - Can set the frequency in the twi.h file (TWI_FREQ)
-	begin();
-
 	
 
 	/*

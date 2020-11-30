@@ -233,7 +233,7 @@ class SimpleSPIClass {
     const uint8_t INT_RAW_RDY_EN = 0x01;
 
 public:
-	int begin();
+	int start();
 
     float returnVar();
 
