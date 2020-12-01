@@ -14,12 +14,11 @@ int Quad::Initialize()
 	SimpleI2CClass i2c;
 
 	i2c.begin();
-	
-	
-	if (!i2c.getAK8963CID())
-		return -1;
-	
-	
 
-	return 1;
+	i2c.InitAK8963();
+	
+	int AKID = i2c.getAK8963CID();
+
+	return AKID;
+	
 }

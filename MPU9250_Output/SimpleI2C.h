@@ -14,8 +14,9 @@ public:
     void begin();
     
     uint8_t getAK8963CID();
-    int writeByte(uint8_t address, uint8_t subAddress, uint8_t data);
-    int readByte(uint8_t address, uint8_t subAddress);
+    int InitAK8963();
+
+
 
 private:
 
@@ -36,9 +37,13 @@ private:
     const uint8_t I2C_SLV0_REG = 0x26;
     const uint8_t I2C_SLV0_CTRL = 0x27;
     const uint8_t I2C_MST_CTRL = 0x24;
+    const uint8_t AK8963_CNTL = 0x0A;
     const uint8_t USER_CTRL = 0x6A;  // Bit 7 enable DMP, bit 3 reset DMP
     const uint8_t EXT_SENS_DATA_00 = 0x49;
 
+
+    int writeByte(uint8_t address, uint8_t subAddress, uint8_t data);
+    int readByte(uint8_t address, uint8_t subAddress);
 
     static void onRequestService(void);
     static void onReceiveService(uint8_t*, int);

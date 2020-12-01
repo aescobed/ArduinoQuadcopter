@@ -26,6 +26,25 @@ void SimpleI2CClass::begin() {
 }
 
 
+
+int SimpleI2CClass::InitAK8963() {
+
+	// First extract the factory calibration for each magnetometer axis
+
+	writeByte(AK8963_I2C_ADDR, AK8963_CNTL, 0x00); // Power down magnetometer  
+	delay(10);
+
+	writeByte(AK8963_I2C_ADDR, AK8963_CNTL, 0x0F); // Enter Fuse ROM access mode
+	delay(10);
+
+	writeByte(AK8963_I2C_ADDR, AK8963_CNTL, 0x00); // Power down magnetometer  
+	delay(10);
+
+	return 1;
+
+}
+
+
 uint8_t SimpleI2CClass::getAK8963CID()
 {
 	//  uint8_t c = readByte(AK8963_ADDRESS, WHO_AM_I_AK8963);  // Read WHO_AM_I register for MPU-9250
