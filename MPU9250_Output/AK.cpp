@@ -1,17 +1,19 @@
 #include "utils/SoftI2CMaster.cpp"
+
+
 #include "AK.h"
 
 AKClass AK;
 const int sdaPin = 11;
 const int sclPin = 12;
 
-SoftI2CMaster i2c;
+SoftI2CMaster softi2c;
 
 AKClass::AKClass()
 {
 
 	// create instance of softi2c communication
-	i2c = SoftI2CMaster(sclPin, sdaPin, 0);
+	softi2c = SoftI2CMaster(sclPin, sdaPin, 0);
 
 }
 
@@ -20,6 +22,10 @@ AKClass::AKClass()
 void AKClass::setup() {
 
 	byte error;
-	error = i2c.beginTransmission(MPU9250_ADDRESS);
+	error = softi2c.beginTransmission(AK8963_I2C_ADDR);
+
+
 
 }
+
+
